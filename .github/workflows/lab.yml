@@ -1,0 +1,67 @@
+name: PostgreSQL synthetic lab manual only
+on:
+  workflow_dispatch:
+    inputs:
+      free_quota_confirmed:
+        description: Current included quota and zero dollar stop budget were verified
+        required: true
+        default: false
+        type: boolean
+      expected_sha:
+        description: Exact reviewed 40 character commit SHA
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: percona-postgres-manual-lab
+  cancel-in-progress: false
+jobs:
+  lab:
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'stpblgm-crypto/percona-postgres-testing-lab' && github.event.repository.private == true && inputs.free_quota_confirmed == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    env:
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+      TZ: UTC
+    steps:
+      - name: Checkout reviewed sources
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify exact revision and available toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
+          PGBIN=/usr/lib/postgresql/16/bin
+          for tool in initdb pg_ctl postgres psql; do test -x "$PGBIN/$tool"; done
+          echo "$PGBIN" >> "$GITHUB_PATH"
+          mkdir evidence
+          {
+            date -u +%FT%TZ
+            git rev-parse HEAD
+            python3 --version
+            cat /etc/os-release
+            uname -srm
+            printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+            "$PGBIN/postgres" --version
+            "$PGBIN/psql" --version
+            dpkg-query -W postgresql-16 postgresql-client-16 libpq5
+          } > evidence/environment.txt
+      - name: Run mock policy and isolated client server checks
+        shell: bash
+        run: bash lab/run_ci.sh "$GITHUB_WORKSPACE/evidence"
+      - name: Verify owned cluster is stopped
+        if: always()
+        shell: bash
+        run: bash lab/verify_cleanup.sh "$GITHUB_WORKSPACE/evidence/db"
+      - name: Save synthetic evidence for one day
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: synthetic-postgres-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 1
