@@ -6,6 +6,7 @@ code in this package:
 - `lab/*.py`
 - `lab/*.sh`
 - `lab/sql/*.sql`
+- `tests/*.py`
 - `run_docker.sh`
 - `Dockerfile.pg16`
 - `.github/workflows/lab.yml` (repository CI glue; absent from the reader ZIP)

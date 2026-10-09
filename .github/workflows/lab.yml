@@ -55,6 +55,9 @@ jobs:
             dpkg-query -W postgresql-16 postgresql-client-16 libpq5
             docker --version
           } > evidence/environment.txt
+      - name: Test reader evidence export offline
+        shell: bash
+        run: python3 tests/test_reader_export.py
       - name: Run installed-toolchain lab
         shell: bash
         run: |

@@ -14,8 +14,8 @@ Run as a non-root user. No third-party Python packages are required.
 Do not use Python `-O` or `PYTHONOPTIMIZE`: receipt validation uses assertions.
 Never point the lab at an existing database.
 
-For the Docker route, use a compatible Linux Docker Engine with permission
-to pull the official Python and PostgreSQL images. From the repository root:
+For the Docker route, use a compatible Linux Docker Engine, GNU tar, and
+permission to pull the official Python and PostgreSQL images. From the repository root:
 
 ```bash
 bash run_docker.sh
@@ -25,6 +25,11 @@ The build uses `python:3.12-bookworm` and `postgres:16.15-bookworm`. The test
 container runs with network disabled, no published ports, a non-root user,
 read-only source, and disposable `/tmp`. Image tags can change: retain your
 exact runtime versions and image digest. No host PostgreSQL service is created.
+Synthetic evidence is produced inside the container's private tmpfs, streamed
+as a tar archive, and extracted into an owner-private host directory without
+preserving container ownership. No world-writable host evidence mount is used.
+Evidence-export errors remain failures; a failing lab keeps its nonzero exit
+status even when its diagnostic evidence is successfully exported.
 
 For the installed-toolchain route, start at the repository root with a fresh
 empty evidence directory:
@@ -65,6 +70,13 @@ environment. Those earlier database runs used a separately controlled Docker
 invocation, not the reader wrapper. `READER_VALIDATION.json` preserves this
 checkpoint. It is not proof of a later workflow result; verify any subsequent
 GitHub Actions run against its exact commit SHA and underlying receipts.
+
+The first hosted attempt on October 9 ran the database checks but failed when
+collecting a container-owned `server.log`. That attempt is not a complete PASS.
+The revised exporter has focused offline regressions, including mode-0600
+logs, preserved failure status, malformed archives, and missing results. Run
+them with `python3 tests/test_reader_export.py`. These stub-based checks do not
+replace the mandatory full Linux and real Docker workflow.
 
 The direct `psql` probe does not test a Python database driver, parameter
 adaptation, pooling, production migrations, concurrency, crash recovery,
