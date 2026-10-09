@@ -1,0 +1,9 @@
+{
+  "experiment": "isolated synthetic SQL contract",
+  "before": "FAIL_EXPECTED_ZX001_NULL_ACCEPTED",
+  "after": "PASS",
+  "client_server_integration": "PASS",
+  "server_version": "16.15 (Debian 16.15-1.pgdg12+2)",
+  "application_driver_integration": "NOT_TESTED",
+  "production_release_authorization": false
+}

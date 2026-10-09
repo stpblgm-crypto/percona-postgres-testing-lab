@@ -1,0 +1,11 @@
+test_expected_specific_error (__main__.SQLStatePolicy.test_expected_specific_error) ... ok
+test_generic_connection_error_rejected (__main__.SQLStatePolicy.test_generic_connection_error_rejected) ... ok
+test_unrelated_message_rejected (__main__.SQLStatePolicy.test_unrelated_message_rejected) ... ok
+test_wrong_sqlstate_rejected (__main__.SQLStatePolicy.test_wrong_sqlstate_rejected) ... ok
+test_arbitrary_socket_rejected (__main__.SocketSafety.test_arbitrary_socket_rejected) ... ok
+test_missing_cluster_rejected (__main__.SocketSafety.test_missing_cluster_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.000s
+
+OK

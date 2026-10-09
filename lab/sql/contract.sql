@@ -1,4 +1,4 @@
--- Synthetic contract checks. Session-local objects only.
+-- Synthetic, session-local SQL contract; do not run against external databases.
 INSERT INTO order_line (quantity) VALUES (2);
 DO $lab$
 BEGIN
@@ -13,7 +13,10 @@ BEGIN
     END;
     BEGIN
         INSERT INTO order_line (quantity) VALUES (NULL);
-        RAISE EXCEPTION 'contract failure: NULL quantity was accepted';
+        -- Dedicated SQLSTATE distinguishes the intended BEFORE defect from
+        -- connectivity, privilege, syntax or unrelated PostgreSQL errors.
+        RAISE EXCEPTION USING ERRCODE = 'ZX001',
+            MESSAGE = 'contract failure: NULL quantity was accepted';
     EXCEPTION WHEN not_null_violation THEN
         NULL;
     END;

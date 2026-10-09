@@ -1,0 +1,18 @@
+test_complete_success (__main__.GatePolicy.test_complete_success) ... ok
+test_duplicate (__main__.GatePolicy.test_duplicate) ... ok
+test_error (__main__.GatePolicy.test_error) ... ok
+test_expected_failure (__main__.GatePolicy.test_expected_failure) ... ok
+test_extra_test (__main__.GatePolicy.test_extra_test) ... ok
+test_failure (__main__.GatePolicy.test_failure) ... ok
+test_hidden_extra_test_run (__main__.GatePolicy.test_hidden_extra_test_run) ... ok
+test_invalid_tests_run (__main__.GatePolicy.test_invalid_tests_run) ... ok
+test_missing_integration (__main__.GatePolicy.test_missing_integration) ... ok
+test_no_tests (__main__.GatePolicy.test_no_tests) ... ok
+test_skipped (__main__.GatePolicy.test_skipped) ... ok
+test_unexpected_success (__main__.GatePolicy.test_unexpected_success) ... ok
+test_wrong_tests_run (__main__.GatePolicy.test_wrong_tests_run) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.000s
+
+OK

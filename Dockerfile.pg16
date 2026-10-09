@@ -1,0 +1,4 @@
+FROM python:3.12-bookworm AS py312
+FROM postgres:16.15-bookworm
+COPY --from=py312 /usr/local /usr/local
+RUN python3 --version && /usr/lib/postgresql/16/bin/initdb --version

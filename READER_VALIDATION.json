@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-10-09T16:56:42.364055+00:00",
+  "candidate": "percona_reader_20261009",
+  "documentation_paths": "CORRECTED_FOR_READER_LAYOUT",
+  "license": "MIT_FOR_ORIGINAL_LAB_CODE_ONLY",
+  "lab_source_bytes": "UNCHANGED_FROM_VERIFIED_2026_10_08_RUNS",
+  "current_offline_checks": {
+    "python": "3.12.14",
+    "gate_policy": "13/13 PASS",
+    "validation_policy": "6/6 PASS",
+    "no_database_legacy_exit": 0,
+    "no_database_strict_exit": 1,
+    "receipt_verifier": "PASS",
+    "bash_syntax": "PASS (4 shell files)",
+    "python_syntax": "PASS (6 lab files and 4 article blocks)",
+    "article_mock": "PASS"
+  },
+  "retained_database_evidence": {
+    "date": "2026-10-08",
+    "postgresql_server_and_psql": "16.15",
+    "python": "3.12.15",
+    "before": "EXPECTED_FAIL: ZX001; psql exit 3; gate exit 1",
+    "after": "CONTRACT_OK; psql exit 0; gate exit 0",
+    "cleanup": "PASS",
+    "included_runs": 1,
+    "separately_retained_runs": 1
+  },
+  "docker_reader_wrapper_e2e": {
+    "status": "NOT_RUN",
+    "reason": "Docker runtime unavailable in the environment used for this packaging review. Retained database runs tested the same lab files through a separately controlled container invocation."
+  },
+  "modified_github_workflow": "NOT_RUN",
+  "application_driver_integration": "NOT_TESTED",
+  "production_release_authorized": false
+}

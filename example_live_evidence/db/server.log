@@ -1,0 +1,35 @@
+2026-10-08 07:58:42.239 UTC [49] LOG:  starting PostgreSQL 16.15 (Debian 16.15-1.pgdg12+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit
+2026-10-08 07:58:42.239 UTC [49] LOG:  listening on Unix socket "/tmp/percona-lab.TLnC9krn/socket/.s.PGSQL.55439"
+2026-10-08 07:58:42.240 UTC [52] LOG:  database system was shut down at 2026-10-08 07:58:42 UTC
+2026-10-08 07:58:42.243 UTC [49] LOG:  database system is ready to accept connections
+2026-10-08 07:58:42.632 UTC [70] ERROR:  contract failure: NULL quantity was accepted
+2026-10-08 07:58:42.632 UTC [70] CONTEXT:  PL/pgSQL function inline_code_block line 16 at RAISE
+2026-10-08 07:58:42.632 UTC [70] STATEMENT:  DO $lab$
+	BEGIN
+	    IF (SELECT count(*) FROM order_line WHERE quantity = 2) <> 1 THEN
+	        RAISE EXCEPTION 'positive quantity was not stored';
+	    END IF;
+	    BEGIN
+	        INSERT INTO order_line (quantity) VALUES (0);
+	        RAISE EXCEPTION 'contract failure: zero quantity was accepted';
+	    EXCEPTION WHEN check_violation THEN
+	        NULL;
+	    END;
+	    BEGIN
+	        INSERT INTO order_line (quantity) VALUES (NULL);
+	        -- Dedicated SQLSTATE distinguishes the intended BEFORE defect from
+	        -- connectivity, privilege, syntax or unrelated PostgreSQL errors.
+	        RAISE EXCEPTION USING ERRCODE = 'ZX001',
+	            MESSAGE = 'contract failure: NULL quantity was accepted';
+	    EXCEPTION WHEN not_null_violation THEN
+	        NULL;
+	    END;
+	END
+	$lab$;
+2026-10-08 07:58:43.062 UTC [49] LOG:  received fast shutdown request
+2026-10-08 07:58:43.062 UTC [49] LOG:  aborting any active transactions
+2026-10-08 07:58:43.063 UTC [49] LOG:  background worker "logical replication launcher" (PID 55) exited with exit code 1
+2026-10-08 07:58:43.063 UTC [50] LOG:  shutting down
+2026-10-08 07:58:43.063 UTC [50] LOG:  checkpoint starting: shutdown immediate
+2026-10-08 07:58:43.064 UTC [50] LOG:  checkpoint complete: wrote 52 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.001 s; sync files=38, longest=0.001 s, average=0.000 s; distance=193 kB, estimate=193 kB; lsn=0/1519C48, redo lsn=0/1519C48
+2026-10-08 07:58:43.067 UTC [49] LOG:  database system is shut down

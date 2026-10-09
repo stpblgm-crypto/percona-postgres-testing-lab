@@ -1,0 +1,48 @@
+{
+  "created_utc": "2026-10-08T07:58:42.971960+00:00",
+  "mode": "gate",
+  "python": "3.12.15",
+  "platform": "Linux-7.3.0-8-generic-x86_64-with-glibc2.36",
+  "tests_run": 2,
+  "success_ids": [
+    "test_lab.MockBoundary.test_call_contract",
+    "test_lab.PostgreSQLContract.test_quantity_contract"
+  ],
+  "skipped": [],
+  "failures": [],
+  "errors": [],
+  "expected_failures": [],
+  "unexpected_successes": [],
+  "required_ids": [
+    "test_lab.MockBoundary.test_call_contract",
+    "test_lab.PostgreSQLContract.test_quantity_contract"
+  ],
+  "framework_success": true,
+  "release_gate": "PASS",
+  "database": {
+    "status": "PASS",
+    "server_version": "16.15 (Debian 16.15-1.pgdg12+2)",
+    "psql_version": "psql (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)",
+    "data_directory": "/tmp/percona-lab.TLnC9krn/data",
+    "unix_socket_directories": "/tmp/percona-lab.TLnC9krn/socket",
+    "schema": "after",
+    "sql_exit_code": 0,
+    "stdout": "CONTRACT_OK\n",
+    "stderr": ""
+  },
+  "source_sha256": {
+    "app.py": "75a5e9f4a8e07915e8f42557b4d1811ca6796b81b0668ed2459e74f38b5a7762",
+    "run.py": "a8ff679dee6ca6afe788192ff25b9b2f20490b3bda2d6325bb497f41b37fb0d6",
+    "run_ci.sh": "2e4ced90d86ee3153f888a48c98f37678b18e8ab4be02a7d1ab9466687c598d3",
+    "run_local_postgres.sh": "aeb2bc6021f29c757de37709bab547092cac27ba2eeee41c8cd7e61df5be335b",
+    "sql/after.sql": "a00ca0807ca593d0070afbfcb30e92cde2cf3dcf106b42b2c333fe1715ec51f3",
+    "sql/before.sql": "c3ab5d949f1be91efd658a6f207ab9c8c3d23fc4460029a7f872262d87f877f5",
+    "sql/contract.sql": "f18db25933750e23f13987d2a8114cb717b10eedab2f0f96ecb071a8f7f32ea3",
+    "test_gate.py": "f0e5bfaf87d1296ead5389fa6e94bc01125e68961584b78ff8fa44eb4a802150",
+    "test_lab.py": "e28f52692ee076dfd2b12f272e4a9beda8f7955b7d197181bd36c7d3156a950a",
+    "test_validation.py": "0abf3b4739b2dc0432007c5dc5716d89d6e981249e9a0bf0c967d427daea3b0c",
+    "verify_cleanup.sh": "af1363498edaca327d3c07f144da56cf3d29f5300112911239e1bb004950acc4",
+    "verify_receipts.py": "be0fc74fa3b8b252ddbd33e68c3903c3755d384c4c71a5688fc9c3a5c506dea7"
+  },
+  "process_exit_code": 0
+}

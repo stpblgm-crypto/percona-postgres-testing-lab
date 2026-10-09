@@ -1,0 +1,8 @@
+test_call_contract (test_lab.MockBoundary.test_call_contract) ... ok
+test_quantity_contract (test_lab.PostgreSQLContract.test_quantity_contract) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.033s
+
+OK
+{"mode": "gate", "framework_success": true, "release_gate": "PASS", "process_exit_code": 0}

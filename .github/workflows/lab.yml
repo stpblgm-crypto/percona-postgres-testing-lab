@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       free_quota_confirmed:
-        description: Current included quota and zero dollar stop budget were verified
+        description: Free standard public Linux runner and applicable quota below 90 percent verified
         required: true
         default: false
         type: boolean
@@ -18,12 +18,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   lab:
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'stpblgm-crypto/percona-postgres-testing-lab' && github.event.repository.private == true && inputs.free_quota_confirmed == true
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'stpblgm-crypto/percona-postgres-testing-lab' && github.repository_id == '1408870785' && github.event.repository.private == false && inputs.free_quota_confirmed == true
     runs-on: ubuntu-24.04
-    timeout-minutes: 6
+    timeout-minutes: 15
     env:
       EXPECTED_SHA: ${{ inputs.expected_sha }}
       TZ: UTC
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - name: Checkout reviewed sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -35,8 +36,11 @@ jobs:
           set -euo pipefail
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
+          sha256sum -c SHA256SUMS
           PGBIN=/usr/lib/postgresql/16/bin
           for tool in initdb pg_ctl postgres psql; do test -x "$PGBIN/$tool"; done
+          command -v docker
+          docker info > /dev/null
           echo "$PGBIN" >> "$GITHUB_PATH"
           mkdir evidence
           {
@@ -49,16 +53,54 @@ jobs:
             "$PGBIN/postgres" --version
             "$PGBIN/psql" --version
             dpkg-query -W postgresql-16 postgresql-client-16 libpq5
+            docker --version
           } > evidence/environment.txt
-      - name: Run mock policy and isolated client server checks
+      - name: Test reader evidence export offline
         shell: bash
-        run: bash lab/run_ci.sh "$GITHUB_WORKSPACE/evidence"
-      - name: Verify owned cluster is stopped
+        run: python3 tests/test_reader_export.py
+      - name: Run installed-toolchain lab
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$GITHUB_WORKSPACE/evidence/run"
+          bash lab/run_ci.sh "$GITHUB_WORKSPACE/evidence/run"
+      - name: Verify host test cluster is stopped
         if: always()
         shell: bash
-        run: bash lab/verify_cleanup.sh "$GITHUB_WORKSPACE/evidence/db"
+        run: bash lab/verify_cleanup.sh "$GITHUB_WORKSPACE/evidence/run/db"
+      - name: Run reader Docker wrapper end to end
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash run_docker.sh 2>&1 | tee "$GITHUB_WORKSPACE/evidence/reader-wrapper.log"
+          docker image inspect percona-reader-pg16:local --format '{{.Id}}' > "$GITHUB_WORKSPACE/evidence/reader-image-id.txt"
+      - name: Retain and verify wrapper evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/evidence/reader-wrapper.log"
+          test -f "$LOG"
+          OUT=$(awk '/^Evidence: / { print substr($0, 11); exit }' "$LOG")
+          [[ "$OUT" =~ ^/tmp/percona-reader\.[A-Za-z0-9]{8}/out$ ]]
+          test -d "$OUT"
+          mkdir "$GITHUB_WORKSPACE/evidence/reader-wrapper"
+          cp -R "$OUT/." "$GITHUB_WORKSPACE/evidence/reader-wrapper/"
+          test -f "$OUT/result.json"
+          python3 lab/verify_receipts.py no-db "$OUT"
+          python3 lab/verify_receipts.py db "$OUT/db"
+          grep -Fx 'cleanup=PASS' "$OUT/db/cleanup-status.log"
+      - name: Bound evidence upload to one MiB
+        id: evidence_size
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d evidence
+          BYTES=$(du -sb evidence | cut -f1)
+          [[ "$BYTES" -le 1048576 ]]
       - name: Save synthetic evidence for one day
-        if: always()
+        if: always() && steps.evidence_size.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: synthetic-postgres-evidence-${{ github.run_id }}-${{ github.run_attempt }}
