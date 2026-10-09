@@ -1,0 +1,4 @@
+pg_ctl: no server running
+cleanup=PASS
+no_mutating_cleanup_verifier=true
+cluster_retained=true

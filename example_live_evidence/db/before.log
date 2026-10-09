@@ -1,0 +1,19 @@
+test_call_contract (test_lab.MockBoundary.test_call_contract) ... ok
+test_quantity_contract (test_lab.PostgreSQLContract.test_quantity_contract) ... FAIL
+
+======================================================================
+FAIL: test_quantity_contract (test_lab.PostgreSQLContract.test_quantity_contract)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/lab/lab/test_lab.py", line 98, in test_quantity_contract
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 3 != 0 : ERROR:  ZX001: contract failure: NULL quantity was accepted
+CONTEXT:  PL/pgSQL function inline_code_block line 16 at RAISE
+LOCATION:  exec_stmt_raise, pl_exec.c:3897
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.035s
+
+FAILED (failures=1)
+{"mode": "gate", "framework_success": false, "release_gate": "FAIL", "process_exit_code": 1}

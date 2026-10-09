@@ -1,0 +1,4 @@
+2026-10-08T07:58:42Z
+psql (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)
+initdb (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)
+pg_ctl (PostgreSQL) 16.15 (Debian 16.15-1.pgdg12+2)
