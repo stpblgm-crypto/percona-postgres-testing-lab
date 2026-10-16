@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import shutil
 import stat
+import sys
 import subprocess
 import tarfile
 import tempfile
@@ -26,10 +27,12 @@ class ReaderExport(unittest.TestCase):
         self.archive = self.base / 'fixture.tar'
         self.args_log = self.base / 'docker-args.json'
         stub = self.bin / 'docker'
-        stub.write_text('''#!/usr/bin/env python3
-"""Offline fake Docker CLI, never talks to daemon or database."""
+        # Fake Docker needs only stdlib. Do not repeatedly load host sitecustomize
+        # or installed packages; keep the existing 20-second budget and all checks.
+        stub.write_text('#!' + sys.executable + ' -S\n' + '''"""Offline fake Docker CLI, never talks to daemon or database."""
 import json, os, sys
 from pathlib import Path
+assert sys.flags.no_site == 1 and sys.flags.optimize == 0
 args=sys.argv[1:]
 if args[0]=='--version':
     print('Docker CLI STUB_ONLY (offline test)')

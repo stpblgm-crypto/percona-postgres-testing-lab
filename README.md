@@ -59,10 +59,11 @@ Offline checks, without any database:
 ```bash
 python3 lab/test_gate.py
 python3 lab/test_validation.py
+python3 tests/test_image_lock.py
 python3 tests/test_reader_export.py
 ```
 
-The offline export suite uses a stub and **fictional fixture receipts**. Even a green result is not evidence that PostgreSQL 18 ran. Do not invoke Python with `-O` or `PYTHONOPTIMIZE`: some receipt assertions use Python `assert`.
+The offline export suite uses a stub and **fictional fixture receipts**. Its standard-library-only fake Docker CLI uses Python `-S` to avoid repeatedly loading host site-initialization hooks; assertions remain enabled, all eight tests and the 20-second per-invocation deadline are retained. Even a green result is not evidence that PostgreSQL 18 ran. Do not invoke Python with `-O` or `PYTHONOPTIMIZE`: some receipt assertions use Python `assert`.
 
 ## Manual GitHub Actions
 

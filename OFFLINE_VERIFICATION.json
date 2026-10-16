@@ -1,0 +1,44 @@
+{
+  "schema": "percona.offline-verification.v04",
+  "started_utc": "2026-10-16T15:22:51.136615+00:00",
+  "completed_utc": "2026-10-16T15:23:58.063831+00:00",
+  "baseline_commit": "bd6bfa0977de4c4e2a810182f5a2f21ff3f5858a",
+  "scope": "OFFLINE_ONLY; fake Docker fixtures are not PostgreSQL evidence",
+  "commands": [
+    {
+      "command": "python3 lab/test_gate.py",
+      "exit_code": 0,
+      "tests": 13
+    },
+    {
+      "command": "python3 lab/test_validation.py",
+      "exit_code": 0,
+      "tests": 6
+    },
+    {
+      "command": "python3 tests/test_image_lock.py",
+      "exit_code": 0,
+      "tests": 4
+    },
+    {
+      "command": "python3 tests/test_reader_export.py",
+      "exit_code": 0,
+      "tests": 8
+    }
+  ],
+  "no_database": {
+    "legacy_exit": 0,
+    "gate_exit": 1,
+    "database_status": "NOT_RUN",
+    "receipt_verifier_exit": 0
+  },
+  "changed_test_sha256": "e81c3f3eb758c7bdf00302cad97047875ab0334e42f948bc3fa52a7b60162dbf",
+  "reader_zip_sha256": "cba45cc6daef54e4d7e7ade8ae653124459985dc491b54bc4aeb434e41b82b38",
+  "unchanged_per_wrapper_timeout_seconds": 20,
+  "export_test_ids_unchanged": true,
+  "assertions_enabled": true,
+  "negative_history": "Unmodified v03 full export retry ended with five TimeoutExpired errors; retained privately. Not a PostgreSQL failure.",
+  "pg18_reader_e2e": "NOT_RUN",
+  "pg18_runtime_versions": null,
+  "github_actions": "NOT_RUN"
+}
