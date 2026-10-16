@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# READ-ONLY verifier. Never stop a cluster based on a user-provided path.
+# READ-ONLY verifier for one owned temporary PG18 cluster. Never stop a cluster based on a user-provided path.
 set -euo pipefail
 if [[ $# != 1 ]]; then echo 'usage: bash lab/verify_cleanup.sh EVIDENCE_DB_DIR' >&2; exit 2; fi
 OUT=$1

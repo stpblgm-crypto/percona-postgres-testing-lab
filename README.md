@@ -1,108 +1,73 @@
-# PostgreSQL test evidence: synthetic laboratory
+# What a green PostgreSQL test job proves: synthetic laboratory
 
-This repository demonstrates the difference between a mocked application
-boundary, a real PostgreSQL SQL-contract check, and an explicit release gate.
-The inputs are synthetic. It is an educational lab, not a production release
-policy. The accompanying unpublished article is supplied separately for
-editorial review and is not included in this repository.
+This MIT-licensed educational laboratory separates three claims:
 
-## Requirements
+1. A Python mock verifies the call made to a cursor-shaped application boundary.
+2. A real `psql`/PostgreSQL connection verifies a synthetic SQL constraint.
+3. A release gate requires both named tests to execute and pass. A skipped database test is `NOT_RUN`, not release evidence.
 
-For the installed-toolchain route, use Linux, Bash, Python 3.12 or newer,
-and PostgreSQL 16 server/client tools (`initdb`, `pg_ctl`, `psql`) on PATH.
-Run as a non-root user. No third-party Python packages are required.
-Do not use Python `-O` or `PYTHONOPTIMIZE`: receipt validation uses assertions.
-Never point the lab at an existing database.
+The experiment uses a temporary `order_line` table. `CHECK (quantity > 0)` alone accepts `NULL`; `NOT NULL` plus `CHECK` enforces the intended rule. It is **not** an application-driver test, a production migration rehearsal, or production release approval.
 
-For the Docker route, use a compatible Linux Docker Engine, GNU tar, and
-permission to pull the official Python and PostgreSQL images. From the repository root:
+## Evidence status (16 October 2026)
+
+- Historical PostgreSQL **16.15** host and Docker reader run: **PASS**, at source tree `2ffd5bdbe6bdf524542162bef1de96b665913a34` (commit `d75040991a09888f523ed7867bf17eec550bd946`). The retained `example_live_evidence/` and [October 9 GitHub workflow](https://github.com/stpblgm-crypto/percona-postgres-testing-lab/actions/runs/37974256714) refer **only** to PostgreSQL 16.15.
+- PostgreSQL **18.6** digest-pinned reader candidate: **E2E NOT_RUN**. Neither source code, an offline mock, nor image manifest metadata establishes a PostgreSQL 18 client/server PASS. PostgreSQL 18 logs/receipts have not yet been captured from any authorized runtime.
+
+The complete English manuscript is held separately in the owner's private editorial package, not in this public code repository. MIT applies to lab source, **not** to that manuscript or historical raw records. See `LICENSING.md`.
+
+## Immutable base image selection
+
+`IMAGE_LOCK.json` records the tag plus **multi-platform OCI index digest** and corresponding **linux/amd64 child manifest digest** for both Docker Official Images:
+
+- PostgreSQL image: `postgres:18.6-bookworm`, `PGDATA=/var/lib/postgresql/18/docker` and image-declared `VOLUME /var/lib/postgresql`.
+- Python image: `python:3.12.15-bookworm`.
+
+These references were obtained from Docker Hub's public image metadata but **have not been pulled or run by this revision**. The wrapper checks live OCI index descriptors against the pinned child manifests before pulling. A missing digest, mismatched architecture, stale registry reference, or Docker error fails closed. At runtime it additionally records the built **local image ID**, which is not interchangeable with the registry's index or platform manifest digest.
+
+The reader uses the explicit `linux/amd64` build/run platform and requires native x86_64 (no architecture emulation). A PostgreSQL 18 lab server is initialised only at `/tmp/percona-lab.XXXXXXXX/data`, not at the image's default PGDATA. `--entrypoint /bin/bash` bypasses the stock Docker entrypoint. An explicit tmpfs at `/var/lib/postgresql` overrides the inherited image `VOLUME` to prevent an anonymous persistent Docker volume.
+
+## Requirements and resource safety
+
+Use a **non-production**, authorized native x86_64 Linux Docker Engine, Bash, GNU tar, Python 3.12+, and standard Linux tools (`sha256sum`, `getconf`, `df`, `awk`). Do not install/change Docker or change groups, ACLs, firewall or daemon settings as part of this experiment. Do not use an existing database or real volume. The preflight requires ≥2 GiB currently available RAM, ≥2 online CPUs and ≥6 GiB available on the Docker filesystem before any image pull/build; if unavailable it reports `NOT_RUN`.
+
+Run from a **freshly extracted** ZIP or source checkout:
 
 ```bash
+sha256sum -c SHA256SUMS
 bash run_docker.sh
 ```
 
-The build uses `python:3.12-bookworm` and `postgres:16.15-bookworm`. The test
-container runs with network disabled, no published ports, a non-root user,
-read-only source, and disposable `/tmp`. Image tags can change: retain your
-exact runtime versions and image digest. No host PostgreSQL service is created.
-Synthetic evidence is produced inside the container's private tmpfs, streamed
-as a tar archive, and extracted into an owner-private host directory without
-preserving container ownership. No world-writable host evidence mount is used.
-Evidence-export errors remain failures; a failing lab keeps its nonzero exit
-status even when its diagnostic evidence is successfully exported.
+The wrapper obtains the locked base images during build (network permitted for retrieval), then runs the test container with `--network none`, no port publication, `--user postgres`, `--read-only`, one read-only source bind, private tmpfs for `/tmp` and `/var/lib/postgresql`, `--cap-drop ALL`, `no-new-privileges`, 128 PIDs, 1 GiB memory, and 2 CPUs. The `.dockerignore` transmits no local source, article, or evidence into the image build context; the code is mounted read-only only in the network-disabled test container. It does not mount Docker socket, secrets, database volumes, or external credentials. It does not touch any existing service/container. It uses a unique lab-only image tag, records its container ID via `--cidfile`, verifies the container is gone after `--rm`, and reports lab-tag removal; shared base-image cache is not pruned. `docker run --rm` removes its test container. No global prune commands are executed.
 
-For the installed-toolchain route, start at the repository root with a fresh
-empty evidence directory:
+The caller-private evidence location is printed as `Evidence: /tmp/percona-reader.XXXXXXXX/out`. After the container stops, inspect it and copy the complete private logs to approved storage **before** deleting this exact lab-owned directory. Do not delete arbitrary host paths. A failing test/export cannot be reported as PASS.
+
+## Expected contract (requires a real PostgreSQL 18 run)
+
+| Step | Required observation |
+|---|---|
+| Offline gate and safety | All tests pass; export unit tests use fake Docker, not the server |
+| NoDB legacy | exit `0`, named database test skipped and `NOT_RUN` |
+| NoDB strict gate | exit `1`, named database test skipped and `NOT_RUN` |
+| BEFORE | NULL passes the faulty `CHECK` constraint, dedicated `ZX001` diagnostic, `psql=3`, gate `1` |
+| AFTER | `NOT NULL`+`CHECK`, `CONTRACT_OK`, `psql=0`, gate `0`, both required test IDs passed and no skips |
+| Cleanup | owned lab `pg_ctl status=3`, no live postmaster.pid, `cleanup=PASS` |
+
+`out/` must contain original no-DB, BEFORE, AFTER and cleanup logs and JSON receipts, source hashes, OCI descriptor verification and runtime versions (PostgreSQL **server**, `psql`, installed `libpq5`, Python). Host environment and final image ID and lab-container ID/cleanup are recorded separately. Raw unredacted environment/server evidence belongs in private storage; only sanitized synthetic data may enter this repository.
+
+Offline checks, without any database:
 
 ```bash
-OUT=$(mktemp -d /tmp/percona-reader-manual.XXXXXXXX)
-export PATH="/usr/lib/postgresql/16/bin:$PATH"  # adapt to the installed version
-bash lab/run_ci.sh "$OUT"
+python3 lab/test_gate.py
+python3 lab/test_validation.py
+python3 tests/test_reader_export.py
 ```
 
-## Expected observations
+The offline export suite uses a stub and **fictional fixture receipts**. Even a green result is not evidence that PostgreSQL 18 ran. Do not invoke Python with `-O` or `PYTHONOPTIMIZE`: some receipt assertions use Python `assert`.
 
-- Gate-policy tests: 13/13 pass; validation-policy tests: 6/6 pass
-- No database: legacy exit 0, strict exit 1, database status `NOT_RUN`
-- BEFORE schema: SQLSTATE `ZX001`, `psql` exit 3, gate exit 1 because NULL was accepted
-- AFTER schema: `CONTRACT_OK`, `psql` exit 0, gate exit 0, both required tests pass
-- Cleanup: `db/cleanup-status.log` records `pg_ctl: no server running` and `cleanup=PASS`
+## Manual GitHub Actions
 
-Inspect the JSON receipts and raw logs under the printed evidence path.
-A missing tool, connection error, timeout, or missing receipt is an incomplete
-experiment, not a passing database test. On a normal host the stopped,
-mode-0700 synthetic cluster is retained for inspection; inside the Docker
-wrapper it is held in tmpfs and disappears with the container.
+The workflow is **workflow_dispatch only** and has no push/PR/schedule/deployment trigger. It restricts the repository name and ID, public visibility, read-only permissions, standard `ubuntu-24.04` Linux runner and 15-minute timeout. `expected_sha` must equal the checked-out revision; `free_quota_confirmed` must be explicitly true based on a fresh verification that the selected runner is free and applicable quotas allow the run. Do not dispatch when billing/quota status is unknown. No CI run in this repository should be interpreted as a PG18 PASS unless the full reader wrapper and exported receipts are verified at that exact SHA.
 
-## What has been verified
+## License and scope
 
-The 12 `lab/` files match the hashes from two separately retained PostgreSQL
-16.15 client/server runs on October 8, 2026, using Python 3.12.15 in Debian 12.
-`example_live_evidence/` contains the original synthetic JSON and selected
-logs from one of those runs. The empty `cleanup-verifier.log` and temporary
-`cluster-path.txt` were omitted; `db/cleanup-status.log` contains the result.
-No customer data, private correspondence, or credentials are included.
-
-At the October 9 packaging checkpoint, the Python-only policy, validation,
-no-database receipt, article-mock, and syntax checks passed. The reader Docker
-wrapper end-to-end test was `NOT_RUN`: Docker was unavailable in that review
-environment. Those earlier database runs used a separately controlled Docker
-invocation, not the reader wrapper. `READER_VALIDATION.json` preserves this
-checkpoint. It is not proof of a later workflow result; verify any subsequent
-GitHub Actions run against its exact commit SHA and underlying receipts.
-
-The first hosted attempt on October 9 ran the database checks but failed when
-collecting a container-owned `server.log`. That attempt is not a complete PASS.
-The revised exporter has focused offline regressions, including mode-0600
-logs, preserved failure status, malformed archives, and missing results. Run
-them with `python3 tests/test_reader_export.py`. These stub-based checks do not
-replace the mandatory full Linux and real Docker workflow.
-
-The direct `psql` probe does not test a Python database driver, parameter
-adaptation, pooling, production migrations, concurrency, crash recovery,
-or performance. The two-test gate is an instructional example.
-
-Check `sha256sum -c SHA256SUMS` after checkout. The manifest verifies file
-integrity; it is not a cryptographic author signature.
-
-## Manual GitHub Actions check
-
-The workflow has no push, pull-request, schedule, deployment, or credential
-write trigger. It is restricted to this repository's exact name and ID and
-requires public visibility, explicit free-runner/quota confirmation, and the
-exact reviewed commit SHA. It uses the standard `ubuntu-24.04` runner with a
-15-minute maximum job duration and read-only repository permissions.
-
-An authorized operator must verify that the standard public-repository runner
-is free and that applicable included-usage limits remain below the approved
-threshold before dispatch. The job first runs the installed-toolchain lab,
-then the Docker reader wrapper, and retains their evidence separately.
-Creating this branch or pull request does not start the workflow. At the
-packaging checkpoint, no new hosted workflow had been dispatched.
-
-## License
-
-The original lab code and CI glue are MIT-licensed; see `LICENSE` and
-`LICENSING.md`. The separate article is not licensed by this code grant.
-PostgreSQL, Python, Bash, Docker images, and their components retain their
-own licenses. No runtime binaries or third-party Python packages are bundled.
+Only original lab/CI code is MIT-licensed. See `LICENSE`, `LICENSING.md`. PostgreSQL/Python/runtime artifacts retain their own licenses. The lab does not verify Python driver binding/adaptation, pooling, application transactions, migrations, concurrency, locks, replication, recovery or performance.

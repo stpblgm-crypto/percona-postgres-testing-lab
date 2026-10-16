@@ -1,0 +1,22 @@
+{
+  "schema": "percona.synthetic.image-lock.v2",
+  "platform": "linux/amd64",
+  "digest_source": "Docker Hub public metadata observed 2026-10-16; exact references are UNPULLED and require registry verification at actual run",
+  "runtime_verification": "NOT_RUN",
+  "images": {
+    "python": {
+      "tag": "python:3.12.15-bookworm",
+      "index_digest": "sha256:40442389f500b9191f057339ac9443c3638c865d360b5c269510afbf084f14ab",
+      "platform_manifest_digest": "sha256:edd0b3ec946cc68bd20e39480bd03929016d0fb6254cbf870cd3bc55ea25116d",
+      "source_url": "https://hub.docker.com/layers/library/python/3.12-bookworm/images/sha256-edd0b3ec946cc68bd20e39480bd03929016d0fb6254cbf870cd3bc55ea25116d",
+      "reference": "python:3.12.15-bookworm@sha256:40442389f500b9191f057339ac9443c3638c865d360b5c269510afbf084f14ab"
+    },
+    "postgres": {
+      "tag": "postgres:18.6-bookworm",
+      "index_digest": "sha256:9225e019a6c5d5b1975d0c728e8f6a56fb86f1e5a2de76666a3ef143b4d479f7",
+      "platform_manifest_digest": "sha256:9e73daeb439141c2b11eea2463f5f1a3b269fd90d897b41cddb7cb440f21aa5d",
+      "source_url": "https://hub.docker.com/layers/amd64/postgres/18.6-bookworm/images/sha256-9e73daeb439141c2b11eea2463f5f1a3b269fd90d897b41cddb7cb440f21aa5d?tab=layers",
+      "reference": "postgres:18.6-bookworm@sha256:9225e019a6c5d5b1975d0c728e8f6a56fb86f1e5a2de76666a3ef143b4d479f7"
+    }
+  }
+}

@@ -8,14 +8,16 @@ code in this package:
 - `lab/sql/*.sql`
 - `tests/*.py`
 - `run_docker.sh`
-- `Dockerfile.pg16`
-- `.github/workflows/lab.yml` (repository CI glue; absent from the reader ZIP)
+- `Dockerfile.pg16` (original code retained unchanged in the GitHub repository)
+- `Dockerfile.pg18`
+- `tools/*.py` (synthetic evidence safety and image provenance checks)
+- `.github/workflows/lab.yml`
 
 Copyright (c) 2026 Alexander Stepanov. SPDX identifier: MIT.
 Preserve the copyright and permission notice when redistributing this code.
 
-The accompanying article is not included in this repository. It is a separate
-manuscript supplied for editorial review and is excluded from the code's MIT license. Any publication of the article is
+The separate `ARTICLE_EN.md` manuscript, if included in a private reader kit, is supplied for editorial review. It is
+excluded from the code's MIT license. Any publication of the article is
 subject to the separately agreed editorial/publication terms. This package
 does not apply MIT to the manuscript, retained evidence, or other prose.
 

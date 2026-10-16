@@ -1,14 +1,14 @@
-name: PostgreSQL synthetic lab manual only
+name: PostgreSQL 18 synthetic reader (manual only)
 on:
   workflow_dispatch:
     inputs:
       free_quota_confirmed:
-        description: Free standard public Linux runner and applicable quota below 90 percent verified
+        description: Standard public Linux runner verified free; applicable quota below 90 percent
         required: true
         default: false
         type: boolean
       expected_sha:
-        description: Exact reviewed 40 character commit SHA
+        description: Exact reviewed 40-character commit SHA
         required: true
         type: string
 permissions:
@@ -25,56 +25,45 @@ jobs:
       EXPECTED_SHA: ${{ inputs.expected_sha }}
       TZ: UTC
       PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONOPTIMIZE: '0'
     steps:
-      - name: Checkout reviewed sources
+      - name: Checkout exact reviewed SHA
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Verify exact revision and available toolchain
+      - name: Verify exact source and environment
         shell: bash
         run: |
           set -euo pipefail
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$EXPECTED_SHA" ]]
           sha256sum -c SHA256SUMS
-          PGBIN=/usr/lib/postgresql/16/bin
-          for tool in initdb pg_ctl postgres psql; do test -x "$PGBIN/$tool"; done
           command -v docker
-          docker info > /dev/null
-          echo "$PGBIN" >> "$GITHUB_PATH"
+          docker info >/dev/null
           mkdir evidence
           {
             date -u +%FT%TZ
             git rev-parse HEAD
+            git rev-parse HEAD^{tree}
             python3 --version
             cat /etc/os-release
             uname -srm
-            printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
-            "$PGBIN/postgres" --version
-            "$PGBIN/psql" --version
-            dpkg-query -W postgresql-16 postgresql-client-16 libpq5
-            docker --version
+            docker version --format '{{.Server.Version}}'
           } > evidence/environment.txt
-      - name: Test reader evidence export offline
-        shell: bash
-        run: python3 tests/test_reader_export.py
-      - name: Run installed-toolchain lab
+      - name: Test gate, validation, export and OCI lock offline
         shell: bash
         run: |
           set -euo pipefail
-          mkdir "$GITHUB_WORKSPACE/evidence/run"
-          bash lab/run_ci.sh "$GITHUB_WORKSPACE/evidence/run"
-      - name: Verify host test cluster is stopped
-        if: always()
-        shell: bash
-        run: bash lab/verify_cleanup.sh "$GITHUB_WORKSPACE/evidence/run/db"
-      - name: Run reader Docker wrapper end to end
+          python3 lab/test_gate.py
+          python3 lab/test_validation.py
+          python3 tests/test_reader_export.py
+          python3 tests/test_image_lock.py
+      - name: Full PG18 Docker reader entry point
         shell: bash
         run: |
           set -euo pipefail
           bash run_docker.sh 2>&1 | tee "$GITHUB_WORKSPACE/evidence/reader-wrapper.log"
-          docker image inspect percona-reader-pg16:local --format '{{.Id}}' > "$GITHUB_WORKSPACE/evidence/reader-image-id.txt"
-      - name: Retain and verify wrapper evidence
+      - name: Independently verify exported raw receipts
         if: always()
         shell: bash
         run: |
@@ -87,19 +76,22 @@ jobs:
           mkdir "$GITHUB_WORKSPACE/evidence/reader-wrapper"
           cp -R "$OUT/." "$GITHUB_WORKSPACE/evidence/reader-wrapper/"
           test -f "$OUT/result.json"
+          test -f "$OUT/oci-lock-check.json"
+          test -f "$OUT/image-ids.txt"
           python3 lab/verify_receipts.py no-db "$OUT"
           python3 lab/verify_receipts.py db "$OUT/db"
           grep -Fx 'cleanup=PASS' "$OUT/db/cleanup-status.log"
-      - name: Bound evidence upload to one MiB
-        id: evidence_size
+          test "$(find "$OUT" -type f -perm -0002 | wc -l)" -eq 0
+      - name: Bound raw evidence upload to 1 MiB
         if: always()
+        id: evidence_size
         shell: bash
         run: |
           set -euo pipefail
           test -d evidence
           BYTES=$(du -sb evidence | cut -f1)
           [[ "$BYTES" -le 1048576 ]]
-      - name: Save synthetic evidence for one day
+      - name: Retain synthetic evidence for one day
         if: always() && steps.evidence_size.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

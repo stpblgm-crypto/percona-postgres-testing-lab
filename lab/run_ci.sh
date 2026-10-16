@@ -21,6 +21,7 @@ python3 verify_receipts.py no-db "$OUT"
 bash run_local_postgres.sh "$OUT/db" > "$OUT/database-launcher.log" 2>&1
 bash verify_cleanup.sh "$OUT/db" > "$OUT/cleanup-verifier.log" 2>&1
 python3 verify_receipts.py db "$OUT/db"
+# This success marker is emitted only after the PostgreSQL 18-specific receipt check.
 python3 - "$OUT" <<'PY'
 import json, sys
 from pathlib import Path

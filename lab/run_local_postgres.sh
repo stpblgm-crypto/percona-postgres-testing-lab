@@ -6,7 +6,7 @@ if [[ $# != 1 ]]; then echo 'usage: bash lab/run_local_postgres.sh NEW_OUTPUT_DI
 mkdir -- "$1" || { echo 'Output already exists or parent missing: refuse overwrite' >&2; exit 2; }
 OUT=$(cd -- "$1" && pwd -P)
 cd -- "$(dirname -- "$0")"
-for tool in initdb pg_ctl psql; do
+for tool in initdb pg_ctl postgres psql dpkg-query ldd; do
   if ! command -v "$tool" >/dev/null 2>&1; then
     printf 'NOT_RUN: missing installed tool: %s\n' "$tool" | tee "$OUT/NOT_RUN.txt"; exit 2
   fi
@@ -36,17 +36,22 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 initdb -D "$BASE/data" --username=lab --auth-local=trust --auth-host=reject \
   --no-locale --encoding=UTF8 > "$OUT/cluster.log" 2>&1
-STARTED=1
 pg_ctl -D "$BASE/data" -l "$OUT/server.log" \
   -o "-k $BASE/socket -p 55439 -c listen_addresses='' -c unix_socket_permissions=0700" \
   -w -t 15 start >> "$OUT/cluster.log" 2>&1
+STARTED=1
 export LAB_DB_ENABLED=1 LAB_CLUSTER_BASE="$BASE" LAB_PG_SOCKET="$BASE/socket" \
        LAB_PGPASSFILE="$BASE/pgpass" LAB_PSQL="$(command -v psql)"
 {
   date -u +'%Y-%m-%dT%H:%M:%SZ'
+  python3 --version
+  uname -srm
   psql --version
   initdb --version
   pg_ctl --version
+  printf 'postgres_binary='; postgres --version
+  printf 'installed_libpq5='; dpkg-query -W -f='${Version}\n' libpq5
+  printf 'psql_libpq_linkage='; ldd "$(command -v psql)" | grep 'libpq.so'
 } > "$OUT/versions.txt"
 set +e
 LAB_SCHEMA=before python3 run.py --mode gate --receipt "$OUT/before.json" > "$OUT/before.log" 2>&1

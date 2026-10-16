@@ -33,6 +33,8 @@ def verify_db(directory):
     directory = Path(directory)
     before = load(directory / 'before.json')
     after = load(directory / 'after.json')
+    assert before['database']['server_version'].startswith('18.'), 'PG18 server required'
+    assert after['database']['server_version'].startswith('18.'), 'PG18 server required'
     assert before['process_exit_code'] == 1
     assert before['tests_run'] == 2 and before['success_ids'] == [MOCK_ID]
     assert before['failures'] == [DB_ID] and not before['errors']

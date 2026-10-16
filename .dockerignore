@@ -1,0 +1,3 @@
+# No local files are needed by the two-stage build.
+# In particular, never transmit private ARTICLE_EN.md or evidence to Docker daemon.
+*
