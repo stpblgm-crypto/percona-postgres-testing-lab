@@ -1,8 +1,8 @@
 # Digest pinning covers both multi-arch OCI indexes. Selected linux/amd64 manifests
 # are independently verified by tools/verify_image_lock.py before build.
 ARG TARGETPLATFORM=linux/amd64
-ARG PY_BASE=python:3.12.15-bookworm@sha256:40442389f500b9191f057339ac9443c3638c865d360b5c269510afbf084f14ab
-ARG PG_BASE=postgres:18.6-bookworm@sha256:9225e019a6c5d5b1975d0c728e8f6a56fb86f1e5a2de76666a3ef143b4d479f7
+ARG PY_BASE=python:3.12.15-bookworm@sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b
+ARG PG_BASE=postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
 FROM --platform=${TARGETPLATFORM} ${PY_BASE} AS py312
 FROM --platform=${TARGETPLATFORM} ${PG_BASE}
 COPY --from=py312 /usr/local /usr/local

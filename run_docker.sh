@@ -97,7 +97,7 @@ docker run --rm --cidfile "$BASE/lab-container.cid" --platform "$PLATFORM" --net
   --tmpfs /tmp:rw,nosuid,nodev,size=512m,mode=1777 \
   --tmpfs /var/lib/postgresql:rw,nosuid,nodev,size=16m,mode=0700 \
   --mount "type=bind,source=$PWD,target=/lab,readonly" \
-  -w /lab --entrypoint /bin/bash "$IMAGE_TAG" -lc '
+  -w /lab --entrypoint /bin/bash "$IMAGE_TAG" -c '
     set -euo pipefail
     [[ "$(id -u)" != 0 ]] || { echo "NOT_RUN: root in container" >&2; exit 2; }
     umask 077

@@ -1,60 +1,61 @@
-# What a green PostgreSQL test job proves: synthetic laboratory
+# What a green PostgreSQL test job actually proves
 
-This MIT-licensed educational laboratory separates three claims:
+This MIT-licensed synthetic lab separates a mock call assertion, a real `psql`/PostgreSQL constraint check, and the release decision. `CHECK (quantity > 0)` accepts NULL; adding `NOT NULL` makes the three-input contract pass. It is not a production case study or a Python database-driver test.
 
-1. A Python mock verifies the call made to a cursor-shaped application boundary.
-2. A real `psql`/PostgreSQL connection verifies a synthetic SQL constraint.
-3. A release gate requires both named tests to execute and pass. A skipped database test is `NOT_RUN`, not release evidence.
+## Verified evidence
 
-The experiment uses a temporary `order_line` table. `CHECK (quantity > 0)` alone accepts `NULL`; `NOT NULL` plus `CHECK` enforces the intended rule. It is **not** an application-driver test, a production migration rehearsal, or production release approval.
+On **16 October 2026, 17:29:55–17:30:33 UTC**, `bash run_docker.sh` completed with **exit 0** on an authorized native x86_64 Linux Docker host. Runtime: PostgreSQL server and psql **18.6 (Debian 18.6-1.pgdg12+2)**, libpq5 **18.6-1.pgdg12+2**, Python **3.12.15**, Docker Engine **29.7.2**.
 
-## Evidence status (16 October 2026)
+| Observation | Actual result |
+|---|---|
+| No database | Legacy 0 / strict gate 1; database NOT_RUN |
+| BEFORE | Expected NULL-acceptance contract failure; SQLSTATE ZX001, psql 3, gate 1 |
+| AFTER | CONTRACT_OK; psql 0, gate 0; both required identities passed, no skips |
+| Cleanup | Own PostgreSQL stopped; container and lab-only image tag removed |
 
-- Historical PostgreSQL **16.15** host and Docker reader run: **PASS**, at source tree `2ffd5bdbe6bdf524542162bef1de96b665913a34` (commit `d75040991a09888f523ed7867bf17eec550bd946`). The retained `example_live_evidence/` and [October 9 GitHub workflow](https://github.com/stpblgm-crypto/percona-postgres-testing-lab/actions/runs/37974256714) refer **only** to PostgreSQL 16.15.
-- PostgreSQL **18.6** digest-pinned reader candidate: **E2E NOT_RUN**. Neither source code, an offline mock, nor image manifest metadata establishes a PostgreSQL 18 client/server PASS. PostgreSQL 18 logs/receipts have not yet been captured from any authorized runtime.
+`PG18_VERIFICATION.json` maps the exact tested code and image lock to this source revision. `evidence/pg18-20261016/receipts.redacted.json` contains actual receipts with only the random temporary data/socket paths redacted and identical source/required-ID maps stored once. Full original logs and unsuccessful predecessor runs are retained privately.
 
-The complete English manuscript is held separately in the owner's private editorial package, not in this public code repository. MIT applies to lab source, **not** to that manuscript or historical raw records. See `LICENSING.md`.
+The executed v06 ZIP SHA256 is `0e5f70d1e14c89265bff65ff0b0111e20c90cb7c30dfba04806bbf9a8db9e7db`. This repository revision incorporates those executable bytes; this README and verification record were added after execution. Do not claim that a later commit or a repackaged archive was itself executed. The fields marked pre-execution in immutable `IMAGE_LOCK.json` describe its assembly time; the external verification record describes the completed run.
 
-## Immutable base image selection
+In the GitHub repository, earlier PostgreSQL **16.15** evidence under `example_live_evidence/` and `READER_VALIDATION.json` is historical. The [9 October workflow](https://github.com/stpblgm-crypto/percona-postgres-testing-lab/actions/runs/37974256714) ran commit `03f3dc8d3b4324bb31a3cdfda3228564efff2c80`, later merged at `d75040991a09888f523ed7867bf17eec550bd946`. It is not PG18 CI evidence and is not bundled in the minimal current reader ZIP. `OFFLINE_VERIFICATION.json` also remains a historical v04 record.
 
-`IMAGE_LOCK.json` records the tag plus **multi-platform OCI index digest** and corresponding **linux/amd64 child manifest digest** for both Docker Official Images:
+## Reader prerequisites and entry point
 
-- PostgreSQL image: `postgres:18.6-bookworm`, `PGDATA=/var/lib/postgresql/18/docker` and image-declared `VOLUME /var/lib/postgresql`.
-- Python image: `python:3.12.15-bookworm`.
+Use an already-authorized, non-production native x86_64 Linux Docker Engine, Bash, Python 3.12+, GNU tar and standard Linux tools. The wrapper requires at least 2 GiB MemAvailable, two online CPUs and 6 GiB free on the Docker filesystem. Never point it at a real database. No Docker installation, daemon reconfiguration, network changes or permission expansion is part of this lab.
 
-These references were obtained from Docker Hub's public image metadata but **have not been pulled or run by this revision**. The wrapper checks live OCI index descriptors against the pinned child manifests before pulling. A missing digest, mismatched architecture, stale registry reference, or Docker error fails closed. At runtime it additionally records the built **local image ID**, which is not interchangeable with the registry's index or platform manifest digest.
-
-The reader uses the explicit `linux/amd64` build/run platform and requires native x86_64 (no architecture emulation). A PostgreSQL 18 lab server is initialised only at `/tmp/percona-lab.XXXXXXXX/data`, not at the image's default PGDATA. `--entrypoint /bin/bash` bypasses the stock Docker entrypoint. An explicit tmpfs at `/var/lib/postgresql` overrides the inherited image `VOLUME` to prevent an anonymous persistent Docker volume.
-
-## Requirements and resource safety
-
-Use a **non-production**, authorized native x86_64 Linux Docker Engine, Bash, GNU tar, Python 3.12+, and standard Linux tools (`sha256sum`, `getconf`, `df`, `awk`). Do not install/change Docker or change groups, ACLs, firewall or daemon settings as part of this experiment. Do not use an existing database or real volume. The preflight requires ≥2 GiB currently available RAM, ≥2 online CPUs and ≥6 GiB available on the Docker filesystem before any image pull/build; if unavailable it reports `NOT_RUN`.
-
-Run from a **freshly extracted** ZIP or source checkout:
+Run from a clean source checkout or extracted reader kit:
 
 ```bash
 sha256sum -c SHA256SUMS
 bash run_docker.sh
 ```
 
-The wrapper obtains the locked base images during build (network permitted for retrieval), then runs the test container with `--network none`, no port publication, `--user postgres`, `--read-only`, one read-only source bind, private tmpfs for `/tmp` and `/var/lib/postgresql`, `--cap-drop ALL`, `no-new-privileges`, 128 PIDs, 1 GiB memory, and 2 CPUs. The `.dockerignore` transmits no local source, article, or evidence into the image build context; the code is mounted read-only only in the network-disabled test container. It does not mount Docker socket, secrets, database volumes, or external credentials. It does not touch any existing service/container. It uses a unique lab-only image tag, records its container ID via `--cidfile`, verifies the container is gone after `--rm`, and reports lab-tag removal; shared base-image cache is not pruned. `docker run --rm` removes its test container. No global prune commands are executed.
+Docker must be usable by the invoking process. The tested service-account invocation used a temporary adapter to existing `sudo docker`, not a newly granted Docker-group membership. Because `sudo docker run --cidfile` creates a root-owned CID file, that adapter returned ownership of only that newly-created lab CID file to its caller before the wrapper exported it. This host-specific adapter was not copied into the product wrapper. A direct authorized CLI user does not need that ownership repair, but that variant was not separately executed in the recorded run.
 
-The caller-private evidence location is printed as `Evidence: /tmp/percona-reader.XXXXXXXX/out`. After the container stops, inspect it and copy the complete private logs to approved storage **before** deleting this exact lab-owned directory. Do not delete arbitrary host paths. A failing test/export cannot be reported as PASS.
+The non-root container must be able to traverse the bind-mount root and read `lab/`. Normal checkout files are readable; forced 0600 extraction caused an earlier access failure. Keep private files outside a reader checkout. Do not fix this by opening the Docker socket, making a home directory public, or changing existing service permissions. The test retained private evidence under its caller-owned directory and granted temporary source access only within its new scratch area.
 
-## Expected contract (requires a real PostgreSQL 18 run)
+## Isolation and images
 
-| Step | Required observation |
-|---|---|
-| Offline gate and safety | All tests pass; export unit tests use fake Docker, not the server |
-| NoDB legacy | exit `0`, named database test skipped and `NOT_RUN` |
-| NoDB strict gate | exit `1`, named database test skipped and `NOT_RUN` |
-| BEFORE | NULL passes the faulty `CHECK` constraint, dedicated `ZX001` diagnostic, `psql=3`, gate `1` |
-| AFTER | `NOT NULL`+`CHECK`, `CONTRACT_OK`, `psql=0`, gate `0`, both required test IDs passed and no skips |
-| Cleanup | owned lab `pg_ctl status=3`, no live postmaster.pid, `cleanup=PASS` |
+`IMAGE_LOCK.json` pins both official image tags and OCI index digests, with the exact `linux/amd64` child manifests. A read-only recheck on 17 October verified the SHA256 of all four raw OCI objects. The successful run pulled by these immutable references.
 
-`out/` must contain original no-DB, BEFORE, AFTER and cleanup logs and JSON receipts, source hashes, OCI descriptor verification and runtime versions (PostgreSQL **server**, `psql`, installed `libpq5`, Python). Host environment and final image ID and lab-container ID/cleanup are recorded separately. Raw unredacted environment/server evidence belongs in private storage; only sanitized synthetic data may enter this repository.
+PostgreSQL 18 declares PGDATA `/var/lib/postgresql/18/docker` and VOLUME `/var/lib/postgresql`. The lab bypasses the stock entrypoint, uses **non-login `bash -c`**, initializes its own disposable cluster under `/tmp`, and covers the declared volume with tmpfs. Using a login shell caused an unrelated PostgreSQL-home logout error; the source now prevents that regression.
 
-Offline checks, without any database:
+During the database experiment the container runs non-root, network none, read-only root filesystem and source mount, cap-drop ALL, no-new-privileges, 128 PIDs, 1 GiB RAM and two CPUs. There are no host ports, host Docker socket, real database volumes or secrets. Image retrieval/build precedes the network-disabled test. A unique lab image tag and container ID delimit cleanup; shared base-image cache is deliberately not pruned.
+
+Docker IDs must be interpreted as observed. In this Docker 29 image store, the reported image IDs equal OCI index digests; platform manifest and config digests are distinct records. See `PG18_VERIFICATION.json`. The raw log field names are preserved, not retroactively rewritten.
+
+## Read the receipts
+
+The generated output directory is printed as `Evidence: .../out`. Inspect and retain it before deleting only that exact owned directory. Required files include `no-db-legacy.json`, `no-db-gate.json`, `db/before.json`, `db/after.json`, `db/cleanup-status.log`, `db/versions.txt`, `result.json`, image IDs and OCI descriptors.
+
+```bash
+python3 lab/verify_receipts.py no-db /path/to/the/generated/out
+python3 lab/verify_receipts.py db /path/to/the/generated/out/db
+```
+
+The paths above are placeholders for the wrapper's actual output. NoDB strict exit 1 and BEFORE exit 1 are expected negative cases; AFTER and the complete comparison must succeed. SQLSTATE ZX001 is mandatory: connection or syntax errors are not substitutes. PostgreSQL cleanup, evidence export and container cleanup are all required.
+
+## Offline tests and CI
 
 ```bash
 python3 lab/test_gate.py
@@ -63,12 +64,10 @@ python3 tests/test_image_lock.py
 python3 tests/test_reader_export.py
 ```
 
-The offline export suite uses a stub and **fictional fixture receipts**. Its standard-library-only fake Docker CLI uses Python `-S` to avoid repeatedly loading host site-initialization hooks; assertions remain enabled, all eight tests and the 20-second per-invocation deadline are retained. Even a green result is not evidence that PostgreSQL 18 ran. Do not invoke Python with `-O` or `PYTHONOPTIMIZE`: some receipt assertions use Python `assert`.
+Recorded results: 13/13, 6/6, 4/4 and 8/8 PASS. Fake-Docker fixtures are not PostgreSQL evidence. The stub uses Python `-S`, not `-O`; assertions and the 20-second wrapper deadline remain enabled. Never run receipt checks with Python optimization.
 
-## Manual GitHub Actions
+Hosted CI remains **NOT_RUN**. The workflow is manual-only, checks the exact expected SHA, repository name/ID/public visibility, and requires truthful `free_quota_confirmed`. It uses standard Ubuntu 24.04, read-only contents permissions, a 15-minute timeout and a bounded one-day artifact. The applicable quota has not been confirmed, so the guard has not been disabled or bypassed. Local Docker PASS and hosted CI PASS are separate statements.
 
-The workflow is **workflow_dispatch only** and has no push/PR/schedule/deployment trigger. It restricts the repository name and ID, public visibility, read-only permissions, standard `ubuntu-24.04` Linux runner and 15-minute timeout. `expected_sha` must equal the checked-out revision; `free_quota_confirmed` must be explicitly true based on a fresh verification that the selected runner is free and applicable quotas allow the run. Do not dispatch when billing/quota status is unknown. No CI run in this repository should be interpreted as a PG18 PASS unless the full reader wrapper and exported receipts are verified at that exact SHA.
+## License and boundaries
 
-## License and scope
-
-Only original lab/CI code is MIT-licensed. See `LICENSE`, `LICENSING.md`. PostgreSQL/Python/runtime artifacts retain their own licenses. The lab does not verify Python driver binding/adaptation, pooling, application transactions, migrations, concurrency, locks, replication, recovery or performance.
+MIT applies to original lab code; see `LICENSE` and `LICENSING.md`. The manuscript, author profile and private correspondence are not in this repository. Their publication is a separate decision. This lab does not verify an application driver, migrations, concurrency, replication, crash recovery or production release readiness.

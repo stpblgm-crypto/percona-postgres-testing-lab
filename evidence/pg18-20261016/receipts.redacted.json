@@ -1,0 +1,163 @@
+{
+  "schema": "percona.pg18.actual-receipts.redacted.v1",
+  "notice": "Actual PG18 receipts, not fixtures. The identical source_sha256 and required_ids maps are stored once as common fields. Only random data/socket paths are redacted. All IDs, outcomes, exit codes, diagnostics and UTC values are preserved. Original per-file SHA256 values identify private raw receipts.",
+  "receipts": {
+    "no-db-legacy": {
+      "source_raw_sha256": "ddb6a34a787ec4db7b4e23e40454edfaf643c0cccb3994a371af8bcfed9af9e8",
+      "redactions": [],
+      "receipt": {
+        "created_utc": "2026-10-16T17:30:29.532908+00:00",
+        "mode": "legacy",
+        "python": "3.12.15",
+        "platform": "Linux-7.3.0-9-generic-x86_64-with-glibc2.36",
+        "tests_run": 2,
+        "success_ids": [
+          "test_lab.MockBoundary.test_call_contract"
+        ],
+        "skipped": [
+          {
+            "id": "test_lab.PostgreSQLContract.test_quantity_contract",
+            "reason": "NOT_RUN: isolated PostgreSQL lab was not enabled"
+          }
+        ],
+        "failures": [],
+        "errors": [],
+        "expected_failures": [],
+        "unexpected_successes": [],
+        "framework_success": true,
+        "release_gate": "FAIL",
+        "database": {
+          "status": "NOT_RUN",
+          "server_version": null,
+          "psql_version": null
+        },
+        "process_exit_code": 0
+      }
+    },
+    "no-db-gate": {
+      "source_raw_sha256": "aa59d77298e7fee7a6e2e6079bc588af3b8052a32c98d5ab396a83cc13673337",
+      "redactions": [],
+      "receipt": {
+        "created_utc": "2026-10-16T17:30:30.141355+00:00",
+        "mode": "gate",
+        "python": "3.12.15",
+        "platform": "Linux-7.3.0-9-generic-x86_64-with-glibc2.36",
+        "tests_run": 2,
+        "success_ids": [
+          "test_lab.MockBoundary.test_call_contract"
+        ],
+        "skipped": [
+          {
+            "id": "test_lab.PostgreSQLContract.test_quantity_contract",
+            "reason": "NOT_RUN: isolated PostgreSQL lab was not enabled"
+          }
+        ],
+        "failures": [],
+        "errors": [],
+        "expected_failures": [],
+        "unexpected_successes": [],
+        "framework_success": true,
+        "release_gate": "FAIL",
+        "database": {
+          "status": "NOT_RUN",
+          "server_version": null,
+          "psql_version": null
+        },
+        "process_exit_code": 1
+      }
+    },
+    "db/before": {
+      "source_raw_sha256": "121228fe9df13899926fbb47704373a299892727c02bb0143e761bda14e683ec",
+      "redactions": [
+        "database.data_directory",
+        "database.unix_socket_directories"
+      ],
+      "receipt": {
+        "created_utc": "2026-10-16T17:30:31.685873+00:00",
+        "mode": "gate",
+        "python": "3.12.15",
+        "platform": "Linux-7.3.0-9-generic-x86_64-with-glibc2.36",
+        "tests_run": 2,
+        "success_ids": [
+          "test_lab.MockBoundary.test_call_contract"
+        ],
+        "skipped": [],
+        "failures": [
+          "test_lab.PostgreSQLContract.test_quantity_contract"
+        ],
+        "errors": [],
+        "expected_failures": [],
+        "unexpected_successes": [],
+        "framework_success": false,
+        "release_gate": "FAIL",
+        "database": {
+          "status": "FAIL_SQL",
+          "server_version": "18.6 (Debian 18.6-1.pgdg12+2)",
+          "psql_version": "psql (PostgreSQL) 18.6 (Debian 18.6-1.pgdg12+2)",
+          "data_directory": "/tmp/percona-lab.REDACTED/data",
+          "unix_socket_directories": "/tmp/percona-lab.REDACTED/socket",
+          "schema": "before",
+          "sql_exit_code": 3,
+          "stdout": "",
+          "stderr": "ERROR:  ZX001: contract failure: NULL quantity was accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 16 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3909\n"
+        },
+        "process_exit_code": 1
+      }
+    },
+    "db/after": {
+      "source_raw_sha256": "09979822c8ba59e41cdebfa4818aa6de9da057e342ceef3722d340563824e80e",
+      "redactions": [
+        "database.data_directory",
+        "database.unix_socket_directories"
+      ],
+      "receipt": {
+        "created_utc": "2026-10-16T17:30:32.359781+00:00",
+        "mode": "gate",
+        "python": "3.12.15",
+        "platform": "Linux-7.3.0-9-generic-x86_64-with-glibc2.36",
+        "tests_run": 2,
+        "success_ids": [
+          "test_lab.MockBoundary.test_call_contract",
+          "test_lab.PostgreSQLContract.test_quantity_contract"
+        ],
+        "skipped": [],
+        "failures": [],
+        "errors": [],
+        "expected_failures": [],
+        "unexpected_successes": [],
+        "framework_success": true,
+        "release_gate": "PASS",
+        "database": {
+          "status": "PASS",
+          "server_version": "18.6 (Debian 18.6-1.pgdg12+2)",
+          "psql_version": "psql (PostgreSQL) 18.6 (Debian 18.6-1.pgdg12+2)",
+          "data_directory": "/tmp/percona-lab.REDACTED/data",
+          "unix_socket_directories": "/tmp/percona-lab.REDACTED/socket",
+          "schema": "after",
+          "sql_exit_code": 0,
+          "stdout": "CONTRACT_OK\n",
+          "stderr": ""
+        },
+        "process_exit_code": 0
+      }
+    }
+  },
+  "common_source_sha256": {
+    "app.py": "75a5e9f4a8e07915e8f42557b4d1811ca6796b81b0668ed2459e74f38b5a7762",
+    "run.py": "a8ff679dee6ca6afe788192ff25b9b2f20490b3bda2d6325bb497f41b37fb0d6",
+    "run_ci.sh": "96a50e5f3df1444a39cad617dfc4e71a2fa8bdd113fb8a8d7f99aea632286989",
+    "run_local_postgres.sh": "30719539dd5cefb1c8e7964824e131031ee59f87a46ec8d30010c982badb6730",
+    "sql/after.sql": "a00ca0807ca593d0070afbfcb30e92cde2cf3dcf106b42b2c333fe1715ec51f3",
+    "sql/before.sql": "c3ab5d949f1be91efd658a6f207ab9c8c3d23fc4460029a7f872262d87f877f5",
+    "sql/contract.sql": "f18db25933750e23f13987d2a8114cb717b10eedab2f0f96ecb071a8f7f32ea3",
+    "test_gate.py": "f0e5bfaf87d1296ead5389fa6e94bc01125e68961584b78ff8fa44eb4a802150",
+    "test_lab.py": "db8ba1c3bbe377cbd2b7366d58d6fe309cbee91a9f20417dfcb2565234d783b4",
+    "test_validation.py": "0abf3b4739b2dc0432007c5dc5716d89d6e981249e9a0bf0c967d427daea3b0c",
+    "verify_cleanup.sh": "bed63ac5a949690b716fbf01f977f50a27152921c1fe9b0ab0b7d55fc0ca0cf2",
+    "verify_receipts.py": "753d8ddb9e9f96a70abc95b1b6e3eb690d64a864761fef5107a80f0bd5131357"
+  },
+  "common_required_ids": [
+    "test_lab.MockBoundary.test_call_contract",
+    "test_lab.PostgreSQLContract.test_quantity_contract"
+  ]
+}
