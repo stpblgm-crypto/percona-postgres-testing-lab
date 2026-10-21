@@ -1,0 +1,11 @@
+# Digest pinning covers both multi-arch OCI indexes. Selected linux/amd64 manifests
+# are independently verified by tools/verify_image_lock.py before build.
+ARG TARGETPLATFORM=linux/amd64
+ARG PY_BASE=python:3.12.15-bookworm@sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b
+ARG PG_BASE=postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c
+FROM --platform=${TARGETPLATFORM} ${PY_BASE} AS py312
+FROM --platform=${TARGETPLATFORM} ${PG_BASE}
+COPY --from=py312 /usr/local /usr/local
+# Entrypoint and image VOLUME are not used for the synthetic cluster.
+# Docker runtime mounts explicit tmpfs over /var/lib/postgresql; DB uses /tmp.
+RUN python3 --version && /usr/lib/postgresql/18/bin/initdb --version

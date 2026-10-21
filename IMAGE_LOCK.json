@@ -1,0 +1,22 @@
+{
+  "schema": "percona.synthetic.image-lock.v05",
+  "platform": "linux/amd64",
+  "digest_source": "Live docker buildx imagetools inspect OCI index + linux/amd64 child from owner laptop 2026-10-16T17:10Z; contents not yet pulled at snapshot assembly",
+  "runtime_verification": "PENDING_LIVE_RUN",
+  "images": {
+    "python": {
+      "tag": "python:3.12.15-bookworm",
+      "index_digest": "sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b",
+      "platform_manifest_digest": "sha256:edd0b3ec946cc68bd20e39480bd03929016d0fb6254cbf870cd3bc55ea25116d",
+      "source_url": "https://hub.docker.com/_/python",
+      "reference": "python:3.12.15-bookworm@sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b"
+    },
+    "postgres": {
+      "tag": "postgres:18.6-bookworm",
+      "index_digest": "sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c",
+      "platform_manifest_digest": "sha256:9551dd5bf356409a21b31248f49b33bba9bb1877365f3a7e933aecd9af3cf52d",
+      "source_url": "https://hub.docker.com/_/postgres",
+      "reference": "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c"
+    }
+  }
+}

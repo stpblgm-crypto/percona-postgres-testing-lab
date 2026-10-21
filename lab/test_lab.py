@@ -85,6 +85,7 @@ class PostgreSQLContract(unittest.TestCase):
         self.assertEqual(actual_data, str(base / 'data'), 'Refuse a foreign database')
         self.assertEqual(actual_socket, str(socket), 'Refuse a foreign socket')
         DB_META['server_version'] = show('server_version')
+        self.assertTrue(DB_META['server_version'].startswith('18.'), 'PG18 runtime required')
         schema = os.environ.get('LAB_SCHEMA', 'after')
         self.assertIn(schema, ('before', 'after'))
         sql = (ROOT / 'sql' / f'{schema}.sql').read_text(encoding='utf-8') + '\n' + (
