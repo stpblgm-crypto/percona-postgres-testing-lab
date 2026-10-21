@@ -2,7 +2,18 @@
 
 This MIT-licensed synthetic lab separates a mock call assertion, a real `psql`/PostgreSQL constraint check, and the release decision. `CHECK (quantity > 0)` accepts NULL; adding `NOT NULL` makes the three-input contract pass. It is not a production case study or a Python database-driver test.
 
-## Verified evidence
+## Latest verified local run: 21 October 2026
+
+A fresh public clone at commit `88adcd8cba032665e3c86c8952244b92e385d14d` (tree `ee167b83c85b3c4401594f03737616ab989d9604`) completed `bash run_docker.sh` on **21 October 2026, 10:43:18–10:44:28 UTC**, with **exit 0** using an existing authorized Docker CLI on native Linux x86_64. PostgreSQL server/psql **18.6 (Debian 18.6-1.pgdg12+2)**, libpq5 **18.6-1.pgdg12+2**, Python **3.12.15**, Docker client/engine **29.7.2** were observed.
+
+- NoDB: legacy **0**, strict gate **1**, database **NOT_RUN**.
+- BEFORE: intended **ZX001** NULL-acceptance diagnostic, psql **3**, gate **1**.
+- AFTER: **CONTRACT_OK**, psql/gate **0**, both required test identities PASS, no skips.
+- All **33** offline cases and **47** source checksums passed. Independent receipt verification, OCI checks, own PostgreSQL/container/lab-image cleanup passed.
+
+See [`PG18_VERIFICATION_20261021.json`](PG18_VERIFICATION_20261021.json) and [actual redacted receipts](evidence/pg18-20261021/receipts.redacted.json). This later documentation revision adds the record, receipts and README/checksum updates; **it was not itself executed**. Executable, test, image-lock and workflow bytes remain identical to the tested commit, as recorded by the technical-input hashes. Hosted PG18 CI remains **NOT_RUN**.
+
+## Historical evidence: 16 October 2026
 
 On **16 October 2026, 17:29:55–17:30:33 UTC**, `bash run_docker.sh` completed with **exit 0** on an authorized native x86_64 Linux Docker host. Runtime: PostgreSQL server and psql **18.6 (Debian 18.6-1.pgdg12+2)**, libpq5 **18.6-1.pgdg12+2**, Python **3.12.15**, Docker Engine **29.7.2**.
 
@@ -28,14 +39,14 @@ Use a new directory for the checkout and select the immutable reviewed source sn
 ```bash
 git clone https://github.com/stpblgm-crypto/percona-postgres-testing-lab.git
 cd percona-postgres-testing-lab
-git checkout --detach 4e49d34429f49628a165f0b18672cd96a2c46bb8
+git checkout --detach 88adcd8cba032665e3c86c8952244b92e385d14d
 sha256sum -c SHA256SUMS
 bash run_docker.sh
 ```
 
-The detached checkout above reproduces that historical source revision and its original documentation. An already-extracted reader kit can start with the final two commands from its own root. `SHA256SUMS` covers the reader files, including README and the verification records; it does not hash itself. A documentation-only revision must update the changed documentation entries in that manifest. It must leave the historical runtime receipts and their source maps unchanged.
+The detached checkout above selects the public source actually executed on 21 October. Its README predates this new verification record; the immutable code and image pins are the tested inputs. An already-extracted reader kit can start with the final two commands from its own root. `SHA256SUMS` covers the reader files, including README and the verification records; it does not hash itself. A documentation-only revision must update the changed documentation entries in that manifest. It must leave the historical runtime receipts and their source maps unchanged.
 
-Docker must be usable by the invoking process. The tested service-account invocation used a temporary adapter to existing `sudo docker`, not a newly granted Docker-group membership. Because `sudo docker run --cidfile` creates a root-owned CID file, that adapter returned ownership of only that newly-created lab CID file to its caller before the wrapper exported it. This host-specific adapter was not copied into the product wrapper. A direct authorized CLI user does not need that ownership repair, but that variant was not separately executed in the recorded run.
+Docker must be usable by the invoking process. The 21 October run used the existing authorized Docker CLI directly. The historical 16 October service-account invocation used a temporary adapter to existing `sudo docker`, not a newly granted Docker-group membership. Because `sudo docker run --cidfile` creates a root-owned CID file, that adapter returned ownership of only that newly-created lab CID file to its caller before the wrapper exported it. This host-specific adapter was not copied into the product wrapper. A direct authorized CLI user does not need that ownership repair, and that direct variant completed in the 21 October run.
 
 The non-root container must be able to traverse the bind-mount root and read `lab/`. Normal checkout files are readable; forced 0600 extraction caused an earlier access failure. Keep private files outside a reader checkout. Do not fix this by opening the Docker socket, making a home directory public, or changing existing service permissions. The test retained private evidence under its caller-owned directory and granted temporary source access only within its new scratch area.
 
@@ -45,7 +56,7 @@ The non-root container must be able to traverse the bind-mount root and read `la
 
 PostgreSQL 18 declares PGDATA `/var/lib/postgresql/18/docker` and VOLUME `/var/lib/postgresql`. The lab bypasses the stock entrypoint, uses **non-login `bash -c`**, initializes its own disposable cluster under `/tmp`, and covers the declared volume with tmpfs. Using a login shell caused an unrelated PostgreSQL-home logout error; the source now prevents that regression.
 
-Metadata inspection derives `repository@digest` from each locked `tag@digest` reference. Docker CLI 29.7.2 [selects the tag before the digest](https://github.com/docker/cli/blob/v29.7.2/internal/registryclient/client.go) in its manifest client, so a later tag rebuild can make the combined form fail against the original pin. Digest-only inspection retains Docker's index-digest verification and the independent `linux/amd64` child check; pulls and builds retain the original locked references. This compatibility correction has offline regressions and read-only registry checks; a full PG18 run of the corrected revision is still pending.
+Metadata inspection derives `repository@digest` from each locked `tag@digest` reference. Docker CLI 29.7.2 [selects the tag before the digest](https://github.com/docker/cli/blob/v29.7.2/internal/registryclient/client.go) in its manifest client, so a later tag rebuild can make the combined form fail against the original pin. Digest-only inspection retains Docker's index-digest verification and the independent `linux/amd64` child check; pulls and builds retain the original locked references. This compatibility correction passed its offline regressions and the full 21 October PG18 run at `88adcd8cba032665e3c86c8952244b92e385d14d`.
 
 During the database experiment the container runs non-root, network none, read-only root filesystem and source mount, cap-drop ALL, no-new-privileges, 128 PIDs, 1 GiB RAM and two CPUs. There are no host ports, host Docker socket, real database volumes or secrets. Image retrieval/build precedes the network-disabled test. A unique lab image tag and container ID delimit cleanup; shared base-image cache is deliberately not pruned.
 
@@ -87,7 +98,7 @@ python3 tests/test_image_lock.py
 python3 tests/test_reader_export.py
 ```
 
-Historical v06 recorded results: 13/13, 6/6, 4/4 and 8/8 PASS. Fake-Docker fixtures are not PostgreSQL evidence. The stub uses Python `-S`, not `-O`; assertions and the 20-second wrapper deadline remain enabled. Never run receipt checks with Python optimization.
+Latest 21 October results: gate 13/13, validation 6/6, image lock 4/4 and export 10/10 PASS. Historical v06 results were 13/13, 6/6, 4/4 and 8/8 PASS. Fake-Docker fixtures are not PostgreSQL evidence. The stub uses Python `-S`, not `-O`; assertions and the 20-second wrapper deadline remain enabled. Never run receipt checks with Python optimization.
 
 Hosted PG18 CI remains **NOT_RUN**. The hosted workflow uses `mkdir -p evidence` so its output-directory step works with the tracked `evidence/` directory. This one-line correction was prepared after the recorded v06 run; its local directory behavior was checked, but the changed workflow has not run on a hosted runner. The original 21-entry technical map and receipts remain historical records for revision `4e49d34429f49628a165f0b18672cd96a2c46bb8`, not fresh evidence for this workflow. The workflow is manual-only, checks the exact expected SHA, repository name/ID/public visibility, and requires truthful `free_quota_confirmed`. It uses standard Ubuntu 24.04, read-only contents permissions, a 15-minute timeout and a bounded one-day artifact. The applicable quota has not been confirmed, so the guard has not been disabled or bypassed. Local Docker PASS and hosted CI PASS are separate statements.
 

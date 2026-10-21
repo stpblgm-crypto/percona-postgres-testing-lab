@@ -1,0 +1,163 @@
+{
+  "schema": "percona.pg18.verified-public-source.v1",
+  "status": "LOCAL_DOCKER_READER_PASS",
+  "executed_commit": "88adcd8cba032665e3c86c8952244b92e385d14d",
+  "executed_tree": "ee167b83c85b3c4401594f03737616ab989d9604",
+  "started_utc": "2026-10-21T10:43:18.594910+00:00",
+  "finished_utc": "2026-10-21T10:44:28.215569+00:00",
+  "executed_command": "bash run_docker.sh",
+  "source": "Fresh public clone, detached exact-SHA checkout; all 48 tracked source files verified, checkout clean after run.",
+  "record_provenance": "This new verification record, redacted receipt collection, README update and packaging checksums were prepared after execution. They were not present in the executed commit. Later documentation-only or merge revisions must not be described as executed. Compare their executable/test/workflow bytes with the recorded technical-input hashes.",
+  "technical_input_count": 21,
+  "technical_input_sha256": {
+    ".dockerignore": "4e7a62d8ec8d89ef43d3442ad98b0be75fa6034b9e632b8bee33cb11ac4aab85",
+    ".github/workflows/lab.yml": "f2a75aa25eae3e03f9d0f7464d791a64b745f5848a9a96cfe9bfeef876f39b6f",
+    "Dockerfile.pg18": "0cc524a4e4745334cb5f544ddd574c006c2bf1d27bee28552bf68cfd367c07e8",
+    "IMAGE_LOCK.json": "1fdba59f60b8e353b2adcb3609391f4c332e52ff20816f7a51bd678b6e2795c5",
+    "lab/app.py": "75a5e9f4a8e07915e8f42557b4d1811ca6796b81b0668ed2459e74f38b5a7762",
+    "lab/run.py": "a8ff679dee6ca6afe788192ff25b9b2f20490b3bda2d6325bb497f41b37fb0d6",
+    "lab/run_ci.sh": "96a50e5f3df1444a39cad617dfc4e71a2fa8bdd113fb8a8d7f99aea632286989",
+    "lab/run_local_postgres.sh": "30719539dd5cefb1c8e7964824e131031ee59f87a46ec8d30010c982badb6730",
+    "lab/sql/after.sql": "a00ca0807ca593d0070afbfcb30e92cde2cf3dcf106b42b2c333fe1715ec51f3",
+    "lab/sql/before.sql": "c3ab5d949f1be91efd658a6f207ab9c8c3d23fc4460029a7f872262d87f877f5",
+    "lab/sql/contract.sql": "f18db25933750e23f13987d2a8114cb717b10eedab2f0f96ecb071a8f7f32ea3",
+    "lab/test_gate.py": "f0e5bfaf87d1296ead5389fa6e94bc01125e68961584b78ff8fa44eb4a802150",
+    "lab/test_lab.py": "db8ba1c3bbe377cbd2b7366d58d6fe309cbee91a9f20417dfcb2565234d783b4",
+    "lab/test_validation.py": "0abf3b4739b2dc0432007c5dc5716d89d6e981249e9a0bf0c967d427daea3b0c",
+    "lab/verify_cleanup.sh": "bed63ac5a949690b716fbf01f977f50a27152921c1fe9b0ab0b7d55fc0ca0cf2",
+    "lab/verify_receipts.py": "753d8ddb9e9f96a70abc95b1b6e3eb690d64a864761fef5107a80f0bd5131357",
+    "run_docker.sh": "7b25a2033874504f5c022d613758fac5fa54df7afd1670b900d17f8072c71fb8",
+    "tests/test_image_lock.py": "c5ebd975f57906fb0feb0e19e3eccad94e35ba5b9811c6011462997bdbd9541e",
+    "tests/test_reader_export.py": "a815fa9e1ddef8d5f35ce8d16fe23eed29ba275de7bee5936fe517e25588f701",
+    "tools/safe_extract.py": "7b03190251cb720ff06104dcf9304b3bc07adaa9335fb572fd8d78af785625db",
+    "tools/verify_image_lock.py": "901cd71595b8a6085b74c87e5bda25dd74a80136156f550bdfa1b675f7482149"
+  },
+  "runtime": {
+    "postgres_server": "18.6 (Debian 18.6-1.pgdg12+2)",
+    "psql": "18.6 (Debian 18.6-1.pgdg12+2)",
+    "libpq5_package": "18.6-1.pgdg12+2",
+    "python": "3.12.15",
+    "docker_client": "29.7.2",
+    "docker_server": "29.7.2",
+    "platform": "linux/amd64",
+    "invocation": "Existing authorized Docker CLI; no service-account adapter or permission changes."
+  },
+  "result": {
+    "reader_exit": 0,
+    "no_db": {
+      "legacy_exit": 0,
+      "strict_exit": 1,
+      "database": "NOT_RUN"
+    },
+    "before": {
+      "sqlstate": "ZX001",
+      "psql_exit": 3,
+      "gate_exit": 1,
+      "database": "FAIL_SQL",
+      "reason": "contract failure: NULL quantity was accepted"
+    },
+    "after": {
+      "stdout": "CONTRACT_OK",
+      "psql_exit": 0,
+      "gate_exit": 0,
+      "required_test_count": 2,
+      "skips": 0
+    },
+    "postgres_cleanup": "PASS",
+    "container_cleanup": "PASS",
+    "lab_image_cleanup": "PASS"
+  },
+  "offline": {
+    "gate": {
+      "count": 13,
+      "exit": 0
+    },
+    "validation": {
+      "count": 6,
+      "exit": 0
+    },
+    "export_regressions": {
+      "count": 10,
+      "exit": 0
+    },
+    "image_lock": {
+      "count": 4,
+      "exit": 0
+    },
+    "total": 33,
+    "source_checksums": {
+      "entries": 47,
+      "exit": 0
+    },
+    "warning": "Offline fake-Docker regressions and real PostgreSQL execution are distinct evidence."
+  },
+  "image_provenance": {
+    "lock": {
+      "python": {
+        "tag": "python:3.12.15-bookworm",
+        "index_digest": "sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b",
+        "platform_manifest_digest": "sha256:edd0b3ec946cc68bd20e39480bd03929016d0fb6254cbf870cd3bc55ea25116d",
+        "source_url": "https://hub.docker.com/_/python",
+        "reference": "python:3.12.15-bookworm@sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b"
+      },
+      "postgres": {
+        "tag": "postgres:18.6-bookworm",
+        "index_digest": "sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c",
+        "platform_manifest_digest": "sha256:9551dd5bf356409a21b31248f49b33bba9bb1877365f3a7e933aecd9af3cf52d",
+        "source_url": "https://hub.docker.com/_/postgres",
+        "reference": "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c"
+      }
+    },
+    "descriptor_verification": {
+      "schema": "percona.oci.lock_verification.v2",
+      "platform": "linux/amd64",
+      "status": "REGISTRY_MANIFEST_MATCH_ONLY_NOT_E2E",
+      "images": {
+        "python": {
+          "reference": "python:3.12.15-bookworm@sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b",
+          "index_digest": "sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b",
+          "platform_manifest_digest": "sha256:edd0b3ec946cc68bd20e39480bd03929016d0fb6254cbf870cd3bc55ea25116d",
+          "verification": "PLATFORM_DESCRIPTOR_MATCH"
+        },
+        "postgres": {
+          "reference": "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c",
+          "index_digest": "sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c",
+          "platform_manifest_digest": "sha256:9551dd5bf356409a21b31248f49b33bba9bb1877365f3a7e933aecd9af3cf52d",
+          "verification": "PLATFORM_DESCRIPTOR_MATCH"
+        }
+      }
+    },
+    "index_verification": "Docker canonical repository@digest requests verify pinned index digests. Independent verifier matches exactly one linux/amd64 child. Saved oci-*-index.raw.json files are verbatim formatted Docker output, not original registry payload bytes.",
+    "observed_image_ids": {
+      "final_image_id": "sha256:c896cb062599fbe7934fa06711e232e23ac5e8d5a2a823d3446b28a451f510cf",
+      "final_platform": "linux/amd64",
+      "postgres_base_image_id": "sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c",
+      "python_base_image_id": "sha256:5560e9ab8709f459489e5b8aa696eda8a07ef821e14bb122be62d91234bfa98b"
+    }
+  },
+  "cleanup_verification": "Own PostgreSQL stopped; exact own container and lab image tag independently returned No such container and No such image. No general prune; shared base-image cache retained. Container tmpfs discarded on removal.",
+  "sanitized_receipts": {
+    "path": "evidence/pg18-20261021/receipts.redacted.json",
+    "sha256": "d88f8833237e2f94f8800bf3746eb94ae036ff9bc82cfbef477d8e2d66fa2c80"
+  },
+  "raw_file_sha256": {
+    "reader-status.json": "19902eb654edeb2880cb1d674d01e8603686832cbc3ea8a8cb92e379503c0f7e",
+    "reader-wrapper.log": "ad46f5c52d7e38bef01d98fdf24cb2d27aa76ecbefd16c207d1e50c63c568546",
+    "offline-results.json": "ce9898baf663ead17584b246b2d4efcbbb95ec03a479f46a8e56e1723b972f22",
+    "independent-results.json": "775147aa8c964409c2abaa906663eba45ca2d3d888d7ee565116c11c853130d2",
+    "cleanup-readback.json": "5bb7eb65d13100dca3dcdbb836c8c9b14a49574777f783dfc5b1a9c8b5e61e01",
+    "reader-out/db/cleanup-status.log": "ce3fba4e7e2f0714e0a26235cf89395763ca6b47ed5bdda2d78d71ec3c344fa4",
+    "reader-out/container-cleanup.txt": "fdf23f54d2126a5090f110c40bbffc2dc93638d83696a2cf6486534794b1be98",
+    "reader-out/image-cleanup.log": "3962c455ac752f841a24fa6d7986c4ec12ef6dcccdaca502a7bba6d7db31696f",
+    "reader-out/oci-lock-check.json": "c42979c0c61f522d40663558e6bb73208f53169eb54e3f484e37e03e10a78452",
+    "reader-out/image-ids.txt": "d9d839fff40aa8137d42e7ee4aa10ec6446c577b10ef572b71c6979f206c0c3c"
+  },
+  "historical_evidence": "16 October PG18 and earlier PG16 records remain unchanged; they are separate runs.",
+  "ci": {
+    "local_full_linux_docker": "PASS_AT_EXECUTED_COMMIT",
+    "hosted_pg18": "NOT_RUN",
+    "hosted_workflow": "Manual-only; no dispatch or guard bypass."
+  },
+  "application_driver_integration": "NOT_TESTED",
+  "production_release_authorized": false
+}
