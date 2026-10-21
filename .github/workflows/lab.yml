@@ -40,7 +40,7 @@ jobs:
           sha256sum -c SHA256SUMS
           command -v docker
           docker info >/dev/null
-          mkdir evidence
+          mkdir -p evidence
           {
             date -u +%FT%TZ
             git rev-parse HEAD
