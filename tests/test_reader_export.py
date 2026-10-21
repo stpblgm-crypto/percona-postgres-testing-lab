@@ -26,6 +26,8 @@ class ReaderExport(unittest.TestCase):
         self.bin.mkdir()
         self.archive = self.base / 'fixture.tar'
         self.args_log = self.base / 'docker-args.json'
+        self.manifest_args = self.base / 'manifest-args.jsonl'
+        self.pull_args = self.base / 'pull-args.jsonl'
         stub = self.bin / 'docker'
         # Fake Docker needs only stdlib. Do not repeatedly load host sitecustomize
         # or installed packages; keep the existing 20-second budget and all checks.
@@ -44,10 +46,18 @@ if args[0]=='info':
     print('/tmp')  # DockerRootDir for host-space test
     sys.exit(0)
 if args[:2]==['manifest','inspect']:
+    with Path(os.environ['TEST_MANIFEST_ARGS']).open('a') as log:
+        log.write(json.dumps(args) + '\\n')
+    # Docker 29.7.2's registry client selects NamedTagged before Canonical.
+    # A moved tag therefore fails the pinned-digest check on tag@digest.
+    if os.environ.get('TEST_INDEX_MISMATCH')=='1' or (
+            os.environ.get('TEST_TAG_DRIFT')=='1' and ':' in args[2].split('@')[0]):
+        print('manifest verification failed for digest ' + args[2].split('@')[-1], file=sys.stderr)
+        sys.exit(1)
     lock=json.loads(Path('IMAGE_LOCK.json').read_text())
-    item=lock['images']['postgres' if args[2].startswith('postgres:') else 'python']
+    item=lock['images']['postgres' if args[2].startswith(('postgres:', 'postgres@')) else 'python']
     child=item['platform_manifest_digest']
-    if os.environ.get('TEST_BAD_MANIFEST')=='1' and args[2].startswith('postgres:'):
+    if os.environ.get('TEST_BAD_MANIFEST')=='1' and args[2].startswith(('postgres:', 'postgres@')):
         child='sha256:'+'0'*64
     print(json.dumps({'schemaVersion':2,'manifests':[
         {'digest': child,'platform':{'os':'linux','architecture':'amd64'}},
@@ -56,6 +66,8 @@ if args[:2]==['manifest','inspect']:
 if args[0]=='ps':
     sys.exit(0)  # no pre-existing Docker containers in the offline fixture
 if args[0]=='pull':
+    with Path(os.environ['TEST_PULL_ARGS']).open('a') as log:
+        log.write(json.dumps(args) + '\\n')
     sys.exit(0)
 if args[0]=='build':
     Path(os.environ['TEST_BUILD_ARGS']).write_text(json.dumps(args))
@@ -126,12 +138,17 @@ sys.exit(97)
                 info.gid=os.getgid()
                 archive.addfile(info, io.BytesIO(content))
 
-    def invoke(self, *, container_exit=0, bad_manifest=False, build_exit=0):
+    def invoke(self, *, container_exit=0, bad_manifest=False, build_exit=0,
+               tag_drift=False, index_mismatch=False):
         env = dict(os.environ)
         env.update(PATH=str(self.bin) + os.pathsep + env['PATH'],
                    TEST_ARCHIVE=str(self.archive), TEST_ARGS_LOG=str(self.args_log),
                    TEST_IMAGE_CLEANUP=str(self.base/'image_cleanup.json'),
                    TEST_BUILD_ARGS=str(self.base/'build_args.json'),
+                   TEST_MANIFEST_ARGS=str(self.manifest_args),
+                   TEST_PULL_ARGS=str(self.pull_args),
+                   TEST_TAG_DRIFT=str(int(tag_drift)),
+                   TEST_INDEX_MISMATCH=str(int(index_mismatch)),
                    TEST_BAD_MANIFEST=str(int(bad_manifest)),
                    TEST_BUILD_EXIT=str(build_exit),
                    TEST_CONTAINER_EXIT=str(container_exit), PYTHONDONTWRITEBYTECODE='1',
@@ -183,6 +200,34 @@ sys.exit(97)
         self.assertIn('PG_BASE='+json.loads((ROOT/'IMAGE_LOCK.json').read_text())['images']['postgres']['reference'], build_args)
         self.assertIn('PY_BASE='+json.loads((ROOT/'IMAGE_LOCK.json').read_text())['images']['python']['reference'], build_args)
 
+    def test_mutable_tag_drift_cannot_override_pinned_index(self):
+        self.make_archive()
+        result, out = self.invoke(tag_drift=True)
+        self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
+        lock = json.loads((ROOT/'IMAGE_LOCK.json').read_text())
+        calls = [json.loads(line) for line in self.manifest_args.read_text().splitlines()]
+        self.assertEqual([call[2] for call in calls], [
+            item['tag'].rsplit(':', 1)[0] + '@' + item['index_digest']
+            for item in (lock['images']['postgres'], lock['images']['python'])])
+        # Pull/build continue to use the original immutable lock references.
+        pulls = [json.loads(line) for line in self.pull_args.read_text().splitlines()]
+        self.assertEqual([call[-1] for call in pulls], [
+            lock['images'][name]['reference'] for name in ('postgres', 'python')])
+        build = json.loads((self.base/'build_args.json').read_text())
+        for name, arg in [('postgres', 'PG_BASE='), ('python', 'PY_BASE=')]:
+            self.assertIn(arg + lock['images'][name]['reference'], build)
+        self.assertIsNotNone(out)
+
+    def test_index_digest_verification_failure_blocks_before_build_run(self):
+        self.make_archive()
+        result, out = self.invoke(index_mismatch=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('manifest verification failed for digest', result.stderr)
+        self.assertIsNotNone(out)
+        self.assertFalse(self.pull_args.exists())
+        self.assertFalse(self.args_log.exists())
+        self.assertFalse((self.base/'build_args.json').exists())
+
     def test_failing_container_preserves_status_and_raw_log(self):
         self.make_archive()
         result, out = self.invoke(container_exit=7)
@@ -213,6 +258,7 @@ sys.exit(97)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('OCI linux/amd64 child mismatch', result.stderr)
         self.assertIsNotNone(out)
+        self.assertFalse(self.pull_args.exists())
         self.assertFalse(self.args_log.exists())
         self.assertFalse((self.base/'build_args.json').exists())
 

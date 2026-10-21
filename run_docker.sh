@@ -44,9 +44,15 @@ cp SHA256SUMS "$BASE/out/source-sha256.txt"
   printf 'arch='; uname -m; docker --version; docker version --format 'docker_server_version={{.Server.Version}}';
   printf 'observed_running_containers='; docker ps -q | wc -l; printf 'free_memory_kib=%s\nonline_cpus=%s\nfree_docker_disk_kib=%s\n' "$MEM_KB" "$CPU" "$DISK_KB";
 } > "$BASE/out/host-environment.txt"
-# Resolve multi-arch OCI index descriptors directly from the pinned references.
-docker manifest inspect "$PG_REF" > "$BASE/postgres-index.json"
-docker manifest inspect "$PY_REF" > "$BASE/python-index.json"
+# Docker manifest's registry client prefers the tag in tag@digest references.
+# Inspect repository@digest so a moved tag cannot override the locked index.
+# Docker still verifies that index digest; the verifier below checks its child.
+digest_only_ref() {
+  local tagged_repository="${1%@*}"
+  printf '%s@%s\n' "${tagged_repository%:*}" "${1##*@}"
+}
+docker manifest inspect "$(digest_only_ref "$PG_REF")" > "$BASE/postgres-index.json"
+docker manifest inspect "$(digest_only_ref "$PY_REF")" > "$BASE/python-index.json"
 python3 tools/verify_image_lock.py IMAGE_LOCK.json "$BASE/postgres-index.json" \
   "$BASE/python-index.json" "$BASE/out/oci-lock-check.json"
 # Preserve verbatim OCI index descriptors as evidence independent of summaries.
